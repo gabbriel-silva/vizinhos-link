@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Criar Conta — Vizinhos Link{% endblock %}
+
+{% block content %}
+
+<div class="auth-wrap">
+
+  <div class="auth-card">
+
+    <!-- LOGO -->
+    <div class="auth-logo">
+
+      <div class="brand">
+        🏘️ VizinhosLink
+      </div>
+
+      <div class="tagline">
+        Comunidade unida, bairro mais forte
+      </div>
+
+    </div>
+
+    <!-- TITLE -->
+    <h2 class="auth-title">
+      Criar uma conta
+    </h2>
+
+    <!-- FLASH -->
+    {% with messages = get_flashed_messages() %}
+
+    {% if messages %}
+
+    {% for msg in messages %}
+
+    <div class="flash" style="margin-bottom:14px;">
+      {{ msg }}
+    </div>
+
+    {% endfor %}
+
+    {% endif %}
+
+    {% endwith %}
+
+    <!-- FORM -->
+    <form method="POST" autocomplete="on">
+
+      <!-- CSRF -->
+      {% if csrf_token %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% endif %}
+
+      <!-- USERNAME -->
+      <div class="form-group">
+
+        <label for="username" class="form-label">
+          Nome de usuário
+        </label>
+
+        <input id="username" type="text" name="username" class="form-control" placeholder="Seu nome ou apelido"
+          minlength="3" maxlength="30" autocomplete="username" required autofocus>
+
+        <div class="form-hint">
+          Mínimo 3 caracteres. Visível para outros membros.
+        </div>
+
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="form-group">
+
+        <label for="password" class="form-label">
+          Senha
+        </label>
+
+        <input id="password" type="password" name="password" class="form-control" placeholder="Crie uma senha segura"
+          minlength="6" maxlength="128" autocomplete="new-password" required>
+
+        <div class="form-hint">
+          Mínimo 6 caracteres.
+        </div>
+
+      </div>
+
+      <!-- USER TYPE -->
+      <div class="form-group">
+
+        <label class="form-label">
+          Tipo de perfil
+        </label>
+
+        <div class="type-options">
+
+          <!-- MORADOR -->
+          <label class="type-option">
+
+            <input type="radio" name="user_type" value="Morador" checked>
+
+            <span class="type-icon">
+              🏠
+            </span>
+
+            <span class="type-label">
+              Morador
+            </span>
+
+            <span class="type-desc">
+              Faço parte da comunidade
+            </span>
+
+          </label>
+
+          <!-- PARCEIRO -->
+          <label class="type-option">
+
+            <input type="radio" name="user_type" value="Parceiro">
+
+            <span class="type-icon">
+              🏬
+            </span>
+
+            <span class="type-label">
+              Parceiro
+            </span>
+
+            <span class="type-desc">
+              Comércio ou serviço local
+            </span>
+
+          </label>
+
+        </div>
+
+        <div class="form-hint" style="margin-top:8px;">
+          Isso ajuda no levantamento de dados do projeto UNINTER.
+        </div>
+
+      </div>
+
+      <!-- BUTTON -->
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;">
+        Finalizar Cadastro
+      </button>
+
+    </form>
+
+    <!-- FOOTER -->
+    <div class="auth-footer">
+
+      <p>
+        Já tem conta?
+        <a href="/login">
+          Entrar
+        </a>
+      </p>
+
+      <p style="margin-top:8px;">
+        <a href="/">
+          ← Voltar ao feed
+        </a>
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

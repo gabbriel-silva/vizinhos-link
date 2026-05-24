@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Entrar — Vizinhos Link{% endblock %}
+
+{% block content %}
+
+<div class="auth-wrap">
+
+  <div class="auth-card">
+
+    <!-- LOGO -->
+    <div class="auth-logo">
+
+      <div class="brand">
+        🏘️ VizinhosLink
+      </div>
+
+      <div class="tagline">
+        Comunidade unida, bairro mais forte
+      </div>
+
+    </div>
+
+    <!-- TITLE -->
+    <h2 class="auth-title">
+      Entrar na conta
+    </h2>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages() %}
+
+    {% if messages %}
+
+    {% for msg in messages %}
+
+    <div class="flash" style="margin-bottom:14px;">
+      {{ msg }}
+    </div>
+
+    {% endfor %}
+
+    {% endif %}
+
+    {% endwith %}
+
+    <!-- FORM -->
+    <form method="POST" autocomplete="on">
+
+      <!-- CSRF -->
+      {% if csrf_token %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% endif %}
+
+      <!-- USERNAME -->
+      <div class="form-group">
+
+        <label for="username" class="form-label">
+          Nome de usuário
+        </label>
+
+        <input id="username" type="text" name="username" class="form-control" placeholder="Seu usuário" minlength="3"
+          maxlength="30" autocomplete="username" required autofocus>
+
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="form-group">
+
+        <label for="password" class="form-label">
+          Senha
+        </label>
+
+        <input id="password" type="password" name="password" class="form-control" placeholder="••••••••" minlength="6"
+          autocomplete="current-password" required>
+
+      </div>
+
+      <!-- BUTTON -->
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;">
+        Entrar
+      </button>
+
+    </form>
+
+    <!-- FOOTER -->
+    <div class="auth-footer">
+
+      <p>
+        Não tem conta?
+        <a href="/register">
+          Cadastre-se gratuitamente
+        </a>
+      </p>
+
+      <p style="margin-top:8px;">
+        <a href="/">
+          ← Voltar ao feed
+        </a>
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

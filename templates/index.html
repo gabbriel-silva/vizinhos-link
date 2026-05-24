@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% block title %}Feed — Vizinhos Link{% endblock %}
+
+{% block content %}
+<div class="layout">
+
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Impacto do mês</div>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-num">{{ stats.total }}</div>
+          <div class="stat-label">Publicações</div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-num">{{ stats.resolved }}</div>
+          <div class="stat-label">Resolvidos</div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-num">{{ stats.urgent }}</div>
+          <div class="stat-label">Urgentes</div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-num">{{ stats.members }}</div>
+          <div class="stat-label">Membros</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Explorar</div>
+
+      <div class="filter-list">
+        <a href="/" class="filter-item {% if not current_category %}active{% endif %}">Tudo</a>
+        <a href="/?category=Segurança"
+          class="filter-item {% if current_category == 'Segurança' %}active{% endif %}">Segurança</a>
+        <a href="/?category=Eventos"
+          class="filter-item {% if current_category == 'Eventos' %}active{% endif %}">Eventos</a>
+        <a href="/?category=Serviços"
+          class="filter-item {% if current_category == 'Serviços' %}active{% endif %}">Serviços</a>
+        <a href="/?category=Adoção"
+          class="filter-item {% if current_category == 'Adoção' %}active{% endif %}">Adoção</a>
+        <a href="/?category=Doações"
+          class="filter-item {% if current_category == 'Doações' %}active{% endif %}">Doações</a>
+        <a href="/?category=Avisos"
+          class="filter-item {% if current_category == 'Avisos' %}active{% endif %}">Avisos</a>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Filtrar por status</div>
+
+      <div class="filter-list">
+        <a href="/" class="filter-item">Todos</a>
+        <a href="/?status=open" class="filter-item {% if request.args.get('status') == 'open' %}active{% endif %}">Em
+          aberto</a>
+        <a href="/?status=resolved"
+          class="filter-item {% if request.args.get('status') == 'resolved' %}active{% endif %}">Resolvidos</a>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="main">
+
+    {% if current_user.is_authenticated %}
+
+    <div class="compose-card">
+      <h3>Nova Publicação</h3>
+
+      <form action="/post" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+          <textarea name="content" class="form-control"
+            placeholder="Escreva um aviso, evento ou pedido de ajuda para a comunidade..."
+            aria-label="Conteúdo da publicação" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <input type="text" name="location" class="form-control" placeholder="Localização (opcional)"
+            aria-label="Localização">
+
+          <select name="category" class="form-control" aria-label="Categoria" required>
+            <option value="Avisos">Aviso</option>
+            <option value="Segurança">Segurança</option>
+            <option value="Eventos">Evento</option>
+            <option value="Serviços">Serviço</option>
+            <option value="Adoção">Adoção</option>
+            <option value="Doações">Doação</option>
+          </select>
+        </div>
+
+        <div class="flags-row">
+          <label class="flag-check">
+            <input type="checkbox" name="is_help">
+            <span>Pedido de ajuda</span>
+          </label>
+
+          <label class="flag-check">
+            <input type="checkbox" name="is_urgent">
+            <span>Urgente</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <label class="file-label">
+            Anexar foto
+            <input type="file" name="image" accept="image/*" aria-label="Anexar imagem">
+          </label>
+          <span id="file-name"></span>
+
+          <button type="submit" class="btn btn-primary">Publicar</button>
+        </div>
+      </form>
+    </div>
+
+    {% else %}
+
+    <div class="compose-card" style="text-align:center; padding:32px;">
+      <p
+        style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:16px; text-transform: uppercase; font-weight: 700;">
+        Faça login para compartilhar com sua comunidade.
+      </p>
+      <a href="/login" class="btn btn-primary">Entrar na comunidade</a>
+    </div>
+
+    {% endif %}
+
+    {% if posts %}
+    {% for post in posts %}
+
+    <div class="post-card
+        {% if post.is_urgent and not post.is_resolved %}
+          urgent
+        {% elif post.is_help and not post.is_resolved %}
+          help
+        {% elif post.is_resolved %}
+          resolved
+        {% endif %}
+        {% if post.author.user_type == 'Parceiro' and not post.is_resolved %}
+          partner-post
+        {% endif %}" id="post-{{ post.id }}">
+
+      <div class="post-body">
+
+        <div class="post-header">
+          <div class="post-meta">
+            <div class="post-author">
+              <div class="avatar">{{ post.author.username[:1].upper() if post.author.username else '?' }}</div>
+              <span class="post-author-name">{{ post.author.username }}</span>
+            </div>
+            {% if post.location %}
+            <div class="post-location">Local: {{ post.location }}</div>
+            {% endif %}
+          </div>
+
+          <div class="post-badges">
+            {% if post.is_resolved %}
+            <span class="badge badge-resolved">Resolvido</span>
+            {% else %}
+            {% if post.is_urgent %}
+            <span class="badge badge-urgent">Urgente</span>
+            {% endif %}
+            {% if post.is_help %}
+            <span class="badge badge-help">Ajuda</span>
+            {% endif %}
+            <span class="badge badge-category">{{ post.category }}</span>
+            {% endif %}
+
+            {% if post.author.user_type == 'Parceiro' %}
+            <span class="badge badge-partner">Parceiro</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <p class="post-content">{{ post.content }}</p>
+      </div>
+
+      {% if post.image %}
+      <img src="{{ url_for('static', filename='uploads/' ~ post.image) }}" class="post-img" alt="Imagem da publicação"
+        loading="lazy">
+      {% endif %}
+
+      <div class="post-footer">
+        <span class="post-time">Postado em {{ post.date_posted.strftime('%d/%m/%Y às %H:%M') }}</span>
+
+        <div class="post-actions">
+          {% if current_user.is_authenticated and current_user.id == post.author.id %}
+
+          <form action="/resolve/{{ post.id }}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if not post.is_resolved %}
+            <button type="submit" class="btn btn-sm btn-resolve">Marcar resolvido</button>
+            {% else %}
+            <button type="submit" class="btn btn-sm btn-ghost">Reabrir</button>
+            {% endif %}
+          </form>
+
+          <form action="/delete/{{ post.id }}" method="post" style="display:inline;"
+            onsubmit="return window.confirm('Excluir esta publicação?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+          </form>
+
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="comments-section">
+        {% if post.comments|length > 0 %}
+        <div class="comment-list">
+          {% for comment in post.comments %}
+          <div class="comment-item" style="display: flex; gap: 12px; margin-bottom: 8px;">
+            <div class="avatar" style="flex-shrink:0;">{{ comment.author.username[:1].upper() if comment.author.username
+              else '?' }}</div>
+            <div class="comment-body" style="flex: 1;">
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px dashed var(--surface-2); padding-bottom: 2px;">
+                <span class="comment-author">{{ comment.author.username }}</span>
+                <span class="comment-time">{{ comment.date_posted.strftime('%d/%m %H:%M') }}</span>
+              </div>
+              <p class="comment-text">{{ comment.content }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+        <form action="/comment/{{ post.id }}" method="post" class="comment-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="text" name="comment_content" class="form-control" placeholder="Adicionar um comentário..."
+            aria-label="Adicionar comentário" required>
+          <button type="submit" class="btn btn-ghost btn-sm">Enviar</button>
+        </form>
+        {% endif %}
+      </div>
+
+    </div>
+
+    {% endfor %}
+
+    {% if pagination and pagination.pages > 1 %}
+    <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 32px;">
+      {% if pagination.has_prev %}
+      <a href="{{ url_for('index', page=pagination.prev_num, category=current_category, status=request.args.get('status')) }}"
+        class="btn btn-sm">Anterior</a>
+      {% endif %}
+
+      <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">
+        Página {{ pagination.page }} de {{ pagination.pages }}
+      </span>
+
+      {% if pagination.has_next %}
+      <a href="{{ url_for('index', page=pagination.next_num, category=current_category, status=request.args.get('status')) }}"
+        class="btn btn-sm">Próxima</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+
+    <div class="empty-state">
+      <p>Nenhuma publicação encontrada no feed.</p>
+    </div>
+
+    {% endif %}
+
+  </main>
+
+</div>
+{% endblock %}
