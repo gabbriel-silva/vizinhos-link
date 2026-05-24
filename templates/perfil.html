@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Configurações de Perfil — Vizinhos Link{% endblock %}
+
+{% block content %}
+<div class="layout" style="grid-template-columns: 1fr;">
+  <main class="main" style="max-width: 480px; margin: 0 auto; width: 100%;">
+    <div class="compose-card">
+      <div style="border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-bottom: 24px;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; text-transform: uppercase;">Configurações de
+          Perfil</h3>
+      </div>
+
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 32px; padding: 24px; background: var(--surface-2); border: 2px solid var(--border);">
+        <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; box-shadow: var(--shadow);">
+          {% if current_user.profile_img %}
+          <img src="{{ url_for('static', filename='uploads/' ~ current_user.profile_img) }}" alt="">
+          {% else %}
+          {{ current_user.username[0].upper() }}
+          {% endif %}
+        </div>
+        <div style="text-align: center;">
+          <div
+            style="font-family: var(--font-display); font-size: 1.25rem; text-transform: uppercase; color: var(--text);">
+            {{ current_user.username }}</div>
+          <div
+            style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-top: 4px;">
+            Tipo de Perfil: {{ current_user.user_type }}</div>
+        </div>
+      </div>
+
+      <form action="/perfil" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group" style="text-align: center;">
+          <label class="file-label" style="display: block; padding: 14px; background: var(--surface);">
+            Selecionar foto de perfil
+            <input type="file" name="profile_img" accept="image/*" required>
+          </label>
+          <div id="avatar-file-name"
+            style="font-size: 0.7rem; font-weight: 700; color: var(--accent); margin-top: 12px; text-transform: uppercase;">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+          style="width: 100%; justify-content: center; margin-top: 8px;">Atualizar Foto</button>
+      </form>
+
+      <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--surface-2); padding-top: 16px;">
+        <a href="/" class="btn btn-ghost btn-sm">Voltar para o Feed</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const avatarInput = document.querySelector('input[type="file"][name="profile_img"]');
+  const avatarName = document.getElementById('avatar-file-name');
+  if (avatarInput && avatarName) {
+    avatarInput.addEventListener('change', () => {
+      avatarName.textContent = avatarInput.files[0]?.name || '';
+    });
+  }
+</script>
+{% endblock %}

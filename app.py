@@ -17,7 +17,7 @@ app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max upload
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 db = SQLAlchemy(app)
-csrf = CSRFProtect(app)  # Ativação global da proteção CSRF
+csrf = CSRFProtect(app)  
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -33,6 +33,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     user_type = db.Column(db.String(20), default='Morador')
     bio = db.Column(db.String(200))
+    profile_img = db.Column(db.String(200))
     date_joined = db.Column(db.DateTime, default=datetime.utcnow)
     posts = db.relationship('Post', backref='author', lazy=True)
     comments = db.relationship('Comment', backref='author', lazy=True)
@@ -79,7 +80,6 @@ def index():
     elif status_filter == 'open':
         query = query.filter_by(is_resolved=False)
 
-    # Melhoria técnica: Paginação para eficiência de performance (5 por página)
     pagination = query.order_by(Post.is_urgent.desc(), Post.date_posted.desc()).paginate(page=page, per_page=5, error_out=False)
     posts = pagination.items
 
@@ -93,9 +93,35 @@ def index():
     return render_template('index.html', posts=posts, stats=stats, current_category=cat, pagination=pagination)
 
 
+@app.route('/usuarios')
+def list_users():
+    users = User.query.order_by(User.username).all()
+    return render_template('usuarios.html', users=users)
+
+
+@app.route('/perfil', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        file = request.files.get('profile_img')
+        if file and file.filename != '' and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpg'
+            unique_filename = f"avatar_{uuid.uuid4().hex}.{ext}"
+            
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+            
+            current_user.profile_img = unique_filename
+            db.session.commit()
+            flash('Foto de perfil atualizada com sucesso.')
+            return redirect(url_for('profile'))
+            
+    return render_template('perfil.html')
+
+
 @app.route('/dashboard')
 def dashboard():
-    # Nova rota de extensão: Gera métricas estatísticas de impacto social
     categories = ['Avisos', 'Segurança', 'Eventos', 'Serviços', 'Adoção', 'Doações']
     cat_counts = [Post.query.filter_by(category=c).count() for c in categories]
     
@@ -177,7 +203,6 @@ def create_post():
 
     file = request.files.get('image')
     if file and file.filename != '' and allowed_file(file.filename):
-        # Melhoria de segurança: uso de UUID para evitar colisões de nomes de arquivos
         filename = secure_filename(file.filename)
         ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpg'
         unique_filename = f"{uuid.uuid4().hex}.{ext}"
@@ -203,7 +228,7 @@ def add_comment(post_id):
     return redirect(url_for('index') + f'#post-{post_id}')
 
 
-@app.route('/resolve/<int:post_id>', methods=['POST'])  # Correção do Bug crítico de método
+@app.route('/resolve/<int:post_id>', methods=['POST'])
 @login_required
 def resolve_post(post_id):
     post = db.get_or_404(Post, post_id)

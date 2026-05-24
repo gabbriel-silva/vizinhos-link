@@ -152,7 +152,13 @@
         <div class="post-header">
           <div class="post-meta">
             <div class="post-author">
-              <div class="avatar">{{ post.author.username[:1].upper() if post.author.username else '?' }}</div>
+              <div class="avatar">
+                {% if post.author.profile_img %}
+                <img src="{{ url_for('static', filename='uploads/' ~ post.author.profile_img) }}" alt="">
+                {% else %}
+                {{ post.author.username[:1].upper() if post.author.username else '?' }}
+                {% endif %}
+              </div>
               <span class="post-author-name">{{ post.author.username }}</span>
             </div>
             {% if post.location %}
@@ -217,8 +223,13 @@
         <div class="comment-list">
           {% for comment in post.comments %}
           <div class="comment-item" style="display: flex; gap: 12px; margin-bottom: 8px;">
-            <div class="avatar" style="flex-shrink:0;">{{ comment.author.username[:1].upper() if comment.author.username
-              else '?' }}</div>
+            <div class="avatar" style="flex-shrink:0;">
+              {% if comment.author.profile_img %}
+              <img src="{{ url_for('static', filename='uploads/' ~ comment.author.profile_img) }}" alt="">
+              {% else %}
+              {{ comment.author.username[:1].upper() if comment.author.username else '?' }}
+              {% endif %}
+            </div>
             <div class="comment-body" style="flex: 1;">
               <div
                 style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px dashed var(--surface-2); padding-bottom: 2px;">
